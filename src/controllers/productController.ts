@@ -3,10 +3,11 @@ import { Request, Response } from "express";
 import catchError from "http-errors";
 import { StatusCodes } from "http-status-codes";
 import { UserInfo } from "../models/userInfoModel";
+import FeatureProductModel from "../models/featureProductModel";
 
 const createProduct = async (req: Request, res: Response) => {
   //----> Get new product input from body.
-  const { body: newProduct  } = req;
+  const { body: newProduct } = req;
 
   //----> Store the new product in the database.
   const createdProduct = await prisma.product.create({
@@ -34,7 +35,7 @@ const deleteProduct = async (req: Request, res: Response) => {
 
   //----> Delete the product from the database.
   const deletedProduct = await prisma.product.delete({ where: { id } });
-  
+
   //----> Send back the response.
   res.status(StatusCodes.OK).json({ status: "success", deletedProduct });
 };
@@ -42,7 +43,7 @@ const deleteProduct = async (req: Request, res: Response) => {
 const getAllProducts = async (req: Request, res: Response) => {
   //----> Get products from database.
   const products = await prisma.product.findMany();
-  
+
   //----> Send back response.
   res.status(StatusCodes.OK).json({ status: "success", products });
 };
@@ -50,19 +51,22 @@ const getAllProducts = async (req: Request, res: Response) => {
 const getAllProductsByUserId = async (req: Request, res: Response) => {
   //----> Get the user info that was previously stored in the req.
   const userInfo = req["userInfo"] as UserInfo;
-  
+
   //----> Get the userId from user info.
   const userId = userInfo?.id;
 
   //----> Get all the products by userId from database.
-  const products = await prisma.product.findMany({where: {userId}});
+  const products = await prisma.product.findMany({ where: { userId } });
 
   //----> Throw error for non existent products.
-  if (!products || products.length < 1){
-    throw catchError(StatusCodes.NOT_FOUND, `No product attached with userId = ${userId}`);
+  if (!products || products.length < 1) {
+    throw catchError(
+      StatusCodes.NOT_FOUND,
+      `No product attached with userId = ${userId}`
+    );
   }
-  
-  //----> Send back response 
+
+  //----> Send back response
   res.status(StatusCodes.OK).json({ status: "success", products });
 };
 
@@ -113,10 +117,33 @@ const updatedProduct = async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json({ status: "success", editedProduct });
 };
 
+const updateFeatureProduct = async (req: Request, res: Response) => {
+  const { id, featured } = req.body as FeatureProductModel;
+
+  //----> retrieve the product to update feature.
+  const product = await prisma.product.findUnique({ where: { id } });
+  
+  //---> Check for the existence of retrieved product.
+  if (!product) {
+    catchError(StatusCodes.NOT_FOUND, `Product with id = ${id}`);
+  }
+
+  //----> Update the feature status.
+  const editedProduct = await prisma.product.update({
+    where: { id },
+    data: { ...product, featured },
+  });
+
+  //----> Send back the response.
+  res.status(StatusCodes.OK).json({ status: "success", editedProduct });
+};
+
 export {
-  createProduct,  deleteProduct,
+  createProduct,
+  deleteProduct,
   getAllProducts,
   getAllProductsByUserId,
   getProductById,
   updatedProduct,
+  updateFeatureProduct,
 };

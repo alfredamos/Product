@@ -6,11 +6,13 @@ import {
   getProductById,
   getAllProductsByUserId,
   updatedProduct,
+  updateFeatureProduct
 } from "../controllers/productController";
 import { idValidMiddleware } from "../middleware/idValidMiddleware";
 import { authenticationMiddleware } from "../middleware/authenticationMiddleware";
 import { productValidationMiddleware } from "../middleware/productValidationMiddleware";
 import { roleAuthorizationMiddleware } from "../middleware/roleAuthorizationMiddleware";
+import { featureProductValidationMiddleware } from "../middleware/featureProductValidationMiddleware";
 
 const router = express.Router();
 
@@ -27,6 +29,15 @@ router
     authenticationMiddleware,
     roleAuthorizationMiddleware("Admin"),
     createProduct
+  );
+
+router
+  .route("/feature")
+  .patch(
+    featureProductValidationMiddleware,
+    authenticationMiddleware,
+    roleAuthorizationMiddleware("Admin"),
+    updateFeatureProduct
   );
 
 router

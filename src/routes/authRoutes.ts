@@ -7,7 +7,7 @@ import {
   getAllUsers,
   getOneUser,
   login,
-  makeAdmin,
+  updateUserRole,
   signup,
   updateProfile,
 } from "../controllers/authController";
@@ -18,6 +18,7 @@ import { userEditProfileValidationMiddleware } from "../middleware/userEditProfi
 import { adminAndSelfAuthMiddleware } from "../middleware/adminAndSelfAuthMiddleware";
 import { idValidMiddleware } from "../middleware/idValidMiddleware";
 import { roleAuthorizationMiddleware } from "../middleware/roleAuthorizationMiddleware";
+import { makeAdminUserValidationMiddleware } from "../middleware/makeAdminUserValidationMiddleware";
 
 const router = express.Router();
 
@@ -32,11 +33,12 @@ router.route("/current-user").get(authenticationMiddleware, currentUser);
 router.route("/login").post(userLoginValidationMiddleware, login);
 
 router
-  .route("/make-admin")
+  .route("/change-role")
   .patch(
+    makeAdminUserValidationMiddleware,
     authenticationMiddleware,
     roleAuthorizationMiddleware("Admin"),
-    makeAdmin
+    updateUserRole
   );
 
 router.route("/signup").post(userSignupValidationMiddleware, signup);

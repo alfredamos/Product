@@ -144,6 +144,7 @@ const getAllUsers = async (req: Request, res: Response) => {
       email: true,
       phone: true,
       gender: true,
+      userType: true
     },
   });
 
@@ -171,6 +172,7 @@ const getOneUser = async (req: Request, res: Response) => {
       email: true,
       phone: true,
       gender: true,
+      userType: true
     },
   });
 
@@ -212,7 +214,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     .json({ message: "Login is successful!", isLoggedIn: true, token, userType: user.userType });
 };
 
-const makeAdmin = async (req: Request, res: Response) => {
+const updateUserRole = async (req: Request, res: Response) => {
   //----> Get user credentials.
   const userInfo = req["userInfo"] as UserInfo;
 
@@ -241,7 +243,7 @@ const makeAdmin = async (req: Request, res: Response) => {
   }
 
   //----> Get the email and user details of person to be made admin.
-  const { email: userEmail } = req.body;
+  const { email: userEmail, userType } = req.body;
 
   const user = await prisma.user.findUnique({ where: { email: userEmail } });
 
@@ -256,7 +258,7 @@ const makeAdmin = async (req: Request, res: Response) => {
   //----> Make the user an admin.
   const userUpdated = await prisma.user.update({
     where: { email: userEmail },
-    data: { ...user, userType: UserType.Admin },
+    data: { ...user, userType },
   });
 
   //----> Send back the response.
@@ -356,7 +358,7 @@ export {
   getAllUsers,
   getOneUser,
   login,
-  makeAdmin,
+  updateUserRole,
   signup,
   updateProfile,
 };

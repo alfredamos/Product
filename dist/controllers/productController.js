@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updatedProduct = exports.getProductById = exports.getAllProductsByUserId = exports.getAllProducts = exports.deleteProduct = exports.createProduct = void 0;
+exports.updateFeatureProduct = exports.updatedProduct = exports.getProductById = exports.getAllProductsByUserId = exports.getAllProducts = exports.deleteProduct = exports.createProduct = void 0;
 const productDb_1 = require("../db/productDb");
 const http_errors_1 = __importDefault(require("http-errors"));
 const http_status_codes_1 = require("http-status-codes");
@@ -60,7 +60,7 @@ const getAllProductsByUserId = (req, res) => __awaiter(void 0, void 0, void 0, f
     if (!products || products.length < 1) {
         throw (0, http_errors_1.default)(http_status_codes_1.StatusCodes.NOT_FOUND, `No product attached with userId = ${userId}`);
     }
-    //----> Send back response 
+    //----> Send back response
     res.status(http_status_codes_1.StatusCodes.OK).json({ status: "success", products });
 });
 exports.getAllProductsByUserId = getAllProductsByUserId;
@@ -97,3 +97,20 @@ const updatedProduct = (req, res) => __awaiter(void 0, void 0, void 0, function*
     res.status(http_status_codes_1.StatusCodes.OK).json({ status: "success", editedProduct });
 });
 exports.updatedProduct = updatedProduct;
+const updateFeatureProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id, featured } = req.body;
+    //----> retrieve the product to update feature.
+    const product = yield productDb_1.prisma.product.findUnique({ where: { id } });
+    //---> Check for the existence of retrieved product.
+    if (!product) {
+        (0, http_errors_1.default)(http_status_codes_1.StatusCodes.NOT_FOUND, `Product with id = ${id}`);
+    }
+    //----> Update the feature status.
+    const editedProduct = yield productDb_1.prisma.product.update({
+        where: { id },
+        data: Object.assign(Object.assign({}, product), { featured }),
+    });
+    //----> Send back the response.
+    res.status(http_status_codes_1.StatusCodes.OK).json({ status: "success", editedProduct });
+});
+exports.updateFeatureProduct = updateFeatureProduct;

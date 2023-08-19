@@ -46,7 +46,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateProfile = exports.signup = exports.makeAdmin = exports.login = exports.getOneUser = exports.getAllUsers = exports.deleteUserByEmail = exports.deleteUser = exports.currentUser = exports.changePassword = void 0;
+exports.updateProfile = exports.signup = exports.updateUserRole = exports.login = exports.getOneUser = exports.getAllUsers = exports.deleteUserByEmail = exports.deleteUser = exports.currentUser = exports.changePassword = void 0;
 const productDb_1 = require("../db/productDb");
 const http_errors_1 = __importDefault(require("http-errors"));
 const http_status_codes_1 = require("http-status-codes");
@@ -154,6 +154,7 @@ const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             email: true,
             phone: true,
             gender: true,
+            userType: true
         },
     });
     //----> Check for availability of users
@@ -178,6 +179,7 @@ const getOneUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             email: true,
             phone: true,
             gender: true,
+            userType: true
         },
     });
     //----> Check for existence of user.
@@ -211,7 +213,7 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
         .json({ message: "Login is successful!", isLoggedIn: true, token, userType: user.userType });
 });
 exports.login = login;
-const makeAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateUserRole = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     //----> Get user credentials.
     const userInfo = req["userInfo"];
     //----> Check for authentication.
@@ -230,7 +232,7 @@ const makeAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         throw (0, http_errors_1.default)(http_status_codes_1.StatusCodes.FORBIDDEN, "You are not permitted to perform this task!");
     }
     //----> Get the email and user details of person to be made admin.
-    const { email: userEmail } = req.body;
+    const { email: userEmail, userType } = req.body;
     const user = yield productDb_1.prisma.user.findUnique({ where: { email: userEmail } });
     //----> Check if user exist.
     if (!user) {
@@ -239,7 +241,7 @@ const makeAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     //----> Make the user an admin.
     const userUpdated = yield productDb_1.prisma.user.update({
         where: { email: userEmail },
-        data: Object.assign(Object.assign({}, user), { userType: client_1.UserType.Admin }),
+        data: Object.assign(Object.assign({}, user), { userType }),
     });
     //----> Send back the response.
     res.status(http_status_codes_1.StatusCodes.OK).json({
@@ -247,7 +249,7 @@ const makeAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         userUpdated,
     });
 });
-exports.makeAdmin = makeAdmin;
+exports.updateUserRole = updateUserRole;
 const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const _a = req.body, { email, password, confirmPassword } = _a, signup = __rest(_a, ["email", "password", "confirmPassword"]);
     //----> Check for the existence of the user.
